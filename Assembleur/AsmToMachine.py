@@ -170,13 +170,19 @@ def assembler_ligne(ligne):
 def assembler_fichier(entree, sortie):
     with open(entree, 'r') as fin, open(sortie, 'w') as fout:
         fout.write('v2.0 raw' + '\n')
+        compteur = 0
         for ligne in fin:
+            compteur += 1
             try:
                 binaire = assembler_ligne(ligne)
                 if binaire:
                     fout.write(binaire + '\n')
             except Exception as e:
                 print(f"Erreur ligne '{ligne.strip()}': {e}")
+        compteur = decimal_vers_binaire(compteur, 16)
+        compteur = binaire_vers_hexadecimal(compteur)
+        compteur = compteur[4:]
+        fout.write(compteur + "0003")
 
 
 assembler_fichier("entree.asm", "sortie.raw")
