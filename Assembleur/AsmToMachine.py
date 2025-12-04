@@ -34,6 +34,11 @@ CRTL = {
     'JINF' : '100',
 }
 
+MEM = {
+    "LD" : "000",
+    "ST" : "001"
+}
+
 def decimal_vers_binaire(valeur, nb_bits):
     """
     Convertit une valeur décimale en binaire sur n bits bits.
@@ -140,6 +145,21 @@ def assembler_ligne(ligne):
         adresse_bits = decimal_vers_binaire(adresse_label, 16)
 
         bits = adresse_bits + '0000' + rs2 + rs1 + '0' + op_bits + type_bits
+        bits = bits.ljust(32, '0')
+        return binaire_vers_hexadecimal(bits)
+    
+# Type MEM (ST, LD)
+    if instr in MEM:
+        type_bits = IR_type['MEM']
+        op_bits = MEM[instr]
+
+        rs1 = REG[parts[1].upper()]
+        label = parts[2]
+
+        adresse_label = labels[label]
+        adresse_bits = decimal_vers_binaire(adresse_label, 16)
+
+        bits = adresse_bits + '0000000' + rs1 + '0' + op_bits + type_bits
         bits = bits.ljust(32, '0')
         return binaire_vers_hexadecimal(bits)
     
