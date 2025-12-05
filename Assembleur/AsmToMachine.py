@@ -32,6 +32,8 @@ CRTL = {
     'JNEQ' : '010',
     'JSUP' : '011',
     'JINF' : '100',
+    'CALL' : '101',
+    'RET'  : '110',
 }
 
 def decimal_vers_binaire(valeur, nb_bits):
@@ -122,22 +124,32 @@ def assembler_ligne(ligne):
         type_bits = IR_type['CRTL']
         op_bits = CRTL[instr]
 
-        if instr == 'JMP':
+        if instr in ('JMP', 'CALL'):
             rs1 = '000'
             rs2 = '000'
+            if len(parts) < 2:
+                raise ValueError(f"Instruction {instr} sans label : {ligne}")
             label = parts[1]
+            if label not in labels:
+                raise ValueError(f"Label inconnu : {label}")
+            adresse_bits = decimal_vers_binaire(labels[label], 16)
+
+            # ---------- CAS RET ----------
+        elif instr == 'RET':
+            rs1 = '000'
+            rs2 = '000'
+            adresse_bits = '0' * 16
+
+            # ---------- CAS JEQU / JNEQ / JSUP / JINF ----------
         else:
             if len(parts) < 4:
                 raise ValueError(f"Instruction de saut incomplète : {ligne}")
             rs1 = REG[parts[1].upper()]
             rs2 = REG[parts[2].upper()]
             label = parts[3]
-
-        if label not in labels:
-            raise ValueError(f"Label inconnu : {label}")
-
-        adresse_label = labels[label]
-        adresse_bits = decimal_vers_binaire(adresse_label, 16)
+            if label not in labels:
+                raise ValueError(f"Label inconnu : {label}")
+            adresse_bits = decimal_vers_binaire(labels[label], 16)
 
         bits = adresse_bits + '0000' + rs2 + rs1 + '0' + op_bits + type_bits
         bits = bits.ljust(32, '0')
